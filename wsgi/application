@@ -10,7 +10,7 @@ def index():
         return render_template('index.html')
 
 @app.route('/openshift')
-def application(environ, start_response):
+def welcome(environ, start_response):
 	ctype = 'text/plain'
 	if environ['PATH_INFO'] == '/health':
 		response_body = "1"
