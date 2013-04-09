@@ -40,8 +40,8 @@ if __name__ == '__main__':
    #  Use gevent if we have it, otherwise run a simple httpd server.
    print 'Starting WSGIServer on %s:%d ... ' % (ip, port)
    try:
-      run_gevent_server(zapp.application, ip, port)
+      run_gevent_server(zapp.app, ip, port)
    except:
       print 'gevent probably not installed - using default simple server ...'
-      run_simple_httpd_server(zapp.application, ip, port)
+      run_simple_httpd_server(zapp.app, ip, port)
 
