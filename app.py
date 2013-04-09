@@ -3,8 +3,8 @@ import imp
 import os
 import sys
 
-PYCART_DIR = ''.join(['python-', '.'.join(map(str, sys.version_info[:2]))])
-
+#PYCART_DIR = ''.join(['python-', '.'.join(map(str, sys.version_info[:2]))])
+PYCART_DIR = 'python-2.7'
 try:
    zvirtenv = os.path.join(os.environ['OPENSHIFT_HOMEDIR'], PYCART_DIR,
                            'virtenv', 'bin', 'activate_this.py')
