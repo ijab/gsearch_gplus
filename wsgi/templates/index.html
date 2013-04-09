@@ -7,29 +7,32 @@
   	<link href="/static/css/main.css" rel="stylesheet">
   	<script type="text/javascript" language="javascript" src="/ijab_im/ijab_config.js"></script>
     <script type="text/javascript" language="javascript" src="/ijab_im/ijab_i18n_en.js"></script>
-    <script type="text/javascript" language="javascript" src="/ijab_im/ijab/ijab.nocache.js"></script>
+    <script type="text/javascript" language="javascript" src="/ijab_im/ijab/ijab.nocache.js"></script>    
   </head>
   <body class="signin application">
+  	<div class="topRight buttons">
+  		<a id="logout_button" href="#" class="button red" style="display:none;"><img src="/static/images/cross.png">Logout</a>
+  	</div>
     <div id="wrapper">
       <div class="frame">
         <div id="logo">
-          <img src="/static/images/ijab.png" alt="iJab" height="60" width="226">
+          <img src="/static/images/ijab.png" alt="iJab" height="121" width="127">
         </div>
         <h1>Search with Google+</h1>
 
-<form>
-  <fieldset>
-    <ol>
-      <li>
-        <input type="text" id="query_terms" name="query_terms">
-      </li>
-    </ol> 
-
-    <div class="buttons">
-      <button type="submit" id="search_button">Search</button>
-    </div>
-  </fieldset>
-</form>
+		<form>
+		  <fieldset>
+		    <ol>
+		      <li>
+		        <input type="text" id="query_terms" name="query_terms">
+		      </li>
+		    </ol> 
+		
+		    <div class="buttons">
+		      <button type="submit" id="search_button">Search</button>
+		    </div>
+		  </fieldset>
+		</form>
 
       </div>
     </div>
@@ -38,7 +41,33 @@
       <p class="copyright">Copyright iJab</p>
     </div>
 
+		<div id="modal">
+			<div id="heading">
+				Login with Google Account
+			</div>
+		
+			<div id="content">
+				<fieldset>
+			    <ol>
+			      <li>
+			        <label for="login">GMail Account</label>
+			        <input type="text" placeholder="Email Address" name="login" id="login">
+			      </li>
+			      <li>
+			        <label for="password">Password</label>
+			        <input type="password" placeholder="Password" name="password" id="password">
+			      </li>
+			    </ol>
+		
+					<a id="login_button" href="#" class="button green"><img src="/static/images/tick.png">Login</a>
+			
+					<a id="cancel_button" href="#" class="button red close"><img src="/static/images/cross.png">Cancel</a>
+				</fieldset>
+			</div>
+		</div>
+		
     <script type="text/javascript" src="/static/js/jquery-1.9.1.min.js"></script>
     <script type="text/javascript" src="/static/js/jquery-ui-1.10.2.custom.min.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.reveal.js"></script>
   </body>
 </html>
