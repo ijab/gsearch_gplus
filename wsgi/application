@@ -36,7 +36,7 @@ def get_suggestion():
         suggest = [{"id":"Botaurus stellaris","label":"Great Bittern","value":"Great Bittern"},{"id":"Ixobrychus minutus","label":"Little Bittern","value":"Little Bittern"},{"id":"Ciconia ciconia","label":"White Stork","value":"White Stork"},{"id":"Netta rufina","label":"Red-crested Pochard","value":"Red-crested Pochard"},{"id":"Milvus milvus","label":"Red Kite","value":"Red Kite"},{"id":"Porzana porzana","label":"Spotted Crake","value":"Spotted Crake"},{"id":"Sterna sandvicensis","label":"Sandwich Tern","value":"Sandwich Tern"},{"id":"Sterna hirundo","label":"Common Tern","value":"Common Tern"},{"id":"Sterna paradisaea","label":"Arctic Tern","value":"Arctic Tern"},{"id":"Sternula albifrons","label":"Little Tern","value":"Little Tern"},{"id":"Chlidonias niger","label":"Black Tern","value":"Black Tern"},{"id":"Galerida cristata","label":"Crested Lark","value":"Crested Lark"}]
 
         # Return JSON data
-        return json.encode(suggest)
+        return json.JSONEncoder().encode(suggest)
 
 @app.route('/friends', methods = ['POST', 'GET'])
 def get_friends():
@@ -51,7 +51,7 @@ def get_friends():
                   ]
 
         # Return JSON data
-        return json.encode(friends)
+        return json.JSONDecoder().encode(friends)
 
 #
 # Below for testing only
