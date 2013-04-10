@@ -5,12 +5,16 @@ import os
 import pprint
 import sys
 import re
+import httplib, urllib
+import json
 
 from apiclient.discovery import build
 from oauth2client.file import Storage
+from oauth2client.client import AccessTokenCredentials
 from oauth2client.client import AccessTokenRefreshError
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.tools import run
+
 
 FLAGS = gflags.FLAGS
 
@@ -27,10 +31,6 @@ found at:
 with information from the APIs Console <https://code.google.com/apis/console>.
 
 """
-
-FLOW = flow_from_clientsecrets(CLIENT_SECRETS,
-    scope='https://www.googleapis.com/auth/plus.login',
-    message=MISSING_CLIENT_SECRETS_MESSAGE)
     
 gflags.DEFINE_enum('logging_level', 'ERROR',
     ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
@@ -38,29 +38,58 @@ gflags.DEFINE_enum('logging_level', 'ERROR',
 
 
 class dx_gplus_crawler:
-    def __init__(self):
+    def __init__(self, code):
         logging.getLogger().setLevel(getattr(logging, FLAGS.logging_level))
-        storage = Storage('plus.dat')
-        #if self.credentials is None or self.credentials.invalid:
-        self.credentials = run(FLOW, storage)
-        self.http = httplib2.Http()
-        self.http = self.credentials.authorize(self.http)
-        self.service = build("plus", "v1", http=self.http)
-        self.person=None
-        self.friends=None
-        self.InfoList=None
-        self.progress={'Status':'Not Ready', 'RunningJob':'Nothing', 'Progress':0}
+        params = urllib.urlencode({'code':code,
+                                   'client_id': '504754513196-kk98ot5v9ch3tbqsrat55o76gf8gaa9m.apps.googleusercontent.com',
+                                   'client_secret': 'TZutxu0ahNhv7eqhhUqcRYdP',
+                                   'redirect_uri':"http://flask-ijab.rhcloud.com/oauth2callback",
+                                   'grant_type':'authorization_code'})
+        headers={'content-type':'application/x-www-form-urlencoded'}
+        conn = httplib.HTTPSConnection("accounts.google.com")
+        conn.request("POST", "/o/oauth2/token", params, headers)
+        response = conn.getresponse()
+        res = json.loads(response.read())
+        if(res.has_key('access_token')):
+            #if self.credentials is None or self.credentials.invalid:
+            #self.credentials = run(FLOW, storage)
+            self.credentials = AccessTokenCredentials(res['access_token'],'my-user-agent/1.0')
+            self.http = httplib2.Http()
+            self.http = self.credentials.authorize(self.http)
+            self.service = build("plus", "v1", http=self.http)
+            self.person=None
+            self.friends=None
+            self.InfoList=None
+            self.progress={'Status':'Not Ready', 'RunningJob':'Nothing', 'Progress':0, 'msg' : 'OK'}
+        else:
+            self.progress={'Status':'error', 'RunningJob':'Nothing', 'Progress':0, 'msg' : str(res)}
+            print str(res)
         
-    def relogin(self):
-        storage = Storage('plus.dat')
-        self.credentials = run(FLOW, storage)
-        self.http = httplib2.Http()
-        self.http = self.credentials.authorize(self.http)
-        self.service = build("plus", "v1", http=self.http)
-        self.person=None
-        self.friends=None
-        self.InfoList=None
-        self.progress={'Status':'Not Ready', 'RunningJob':'Nothing', 'Progress':0}
+        
+    def relogin(self, code):
+        params = urllib.urlencode({'code':code,
+                                   'client_id': '504754513196-kk98ot5v9ch3tbqsrat55o76gf8gaa9m.apps.googleusercontent.com',
+                                   'client_secret': 'TZutxu0ahNhv7eqhhUqcRYdP',
+                                   'redirect_uri':"http://flask-ijab.rhcloud.com/oauth2callback",
+                                   'grant_type':'authorization_code'})
+        headers={'content-type':'application/x-www-form-urlencoded'}
+        conn = httplib.HTTPSConnection("accounts.google.com")
+        conn.request("POST", "/o/oauth2/token", params, headers)
+        response = conn.getresponse()
+        res = json.loads(response.read())
+        if(res.has_key('access_token')):
+            #if self.credentials is None or self.credentials.invalid:
+            #self.credentials = run(FLOW, storage)
+            self.credentials = AccessTokenCredentials(res['access_token'],'my-user-agent/1.0')
+            self.http = httplib2.Http()
+            self.http = self.credentials.authorize(self.http)
+            self.service = build("plus", "v1", http=self.http)
+            self.person=None
+            self.friends=None
+            self.InfoList=None
+            self.progress={'Status':'Not Ready', 'RunningJob':'Nothing', 'Progress':0}
+        else:
+            self.progress={'Status':'error', 'RunningJob':'Nothing', 'Progress':0}
         
     def fetchMe(self):
         self.setProgress({'Status':'Crawling Info', 'RunningJob':'Fetching User\'s own Information', 'Progress':0})
@@ -82,8 +111,8 @@ class dx_gplus_crawler:
         content.append(self.removeTag(activity['object']['content']))
         if(activity['object'].has_key('attachments')):
             for attachment in activity['object']['attachments']:
-                content.append(attachment['displayName'])
-                content.append(attachment['content'])
+                content.append(attachment.get('displayName', ''))
+                content.append(attachment.get('content', ''))
         if(activity.has_key('annotation')):
             content.append(activity['annotation'])
         if(activity.has_key('placeName')):
@@ -101,17 +130,28 @@ class dx_gplus_crawler:
         return content
         
     def fetchPersonInfo(self, id):
-        person=self.service.people().get(userId=id).execute(http=self.http)
+        try:
+            person=self.service.people().get(userId=id).execute(http=self.http)
+        except:
+            return
+        
         if(self.InfoList is None):
             self.InfoList={}
         content=[]
         if(person.has_key('organizations')):
             for org in person['organizations']:
-                content.append(org['name'])
+                content.append(org.get('name', ''))
         if(person.has_key('tagline')):
             content.append(person['tagline'])
         activities_doc = self.service.activities().list(userId=id, collection='public').execute(http=self.http)
+
+        count = 0
         for item in activities_doc['items']:
+            if count > 100:
+                break
+
+            count += 1
+            
             activity=self.service.activities().get(activityId=item['id']).execute(http=self.http)
             content.extend(self.parseActivity(activity))
             comments=self.service.comments().list(activityId=activity['id']).execute(http=self.http)
@@ -121,10 +161,16 @@ class dx_gplus_crawler:
                 comments=self.service.comments().list(activityId=activity['id'], pageToken=comments['nextPageToken']).execute(http=self.http)
                 for comment in comments['items']:
                     content.extend(self.parseComment(comment))
-            
+
+        count = 0    
         while(activities_doc.has_key('nextPageToken')):
             activities_doc = self.service.activities().list(userId=id, collection='public', pageToken=activities_doc['nextPageToken']).execute(http=self.http)
             for item in activities_doc['items']:
+                count += 1
+
+                if count > 100:
+                    break
+                
                 activity=self.service.activities().get(activityId=item['id']).execute(http=self.http)
                 content.extend(self.parseActivity(activity))
                 comments=self.service.comments().list(activityId=activity['id']).execute(http=self.http)
@@ -134,6 +180,9 @@ class dx_gplus_crawler:
                     comments=self.service.comments().list(activityId=activity['id'], pageToken=comments['nextPageToken']).execute(http=self.http)
                     for comment in comments['items']:
                         content.extend(self.parseComment(comment))
+
+            if count > 100:
+                break
             
         if(id=='me'):
             moments = self.service.moments().list(userId=id, collection='vault', pageToken=None, maxResults=None, targetUrl=None, type=None).execute(http=self.http)
@@ -168,6 +217,6 @@ class dx_gplus_crawler:
         return self.progress
 
 if __name__ == '__main__':
-    dx_crawler=dx_gplus_crawler()
+    dx_crawler=dx_gplus_crawler('sasasw')
     dx_crawler.fetchMe()
     print dx_crawler.InfoList

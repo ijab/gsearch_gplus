@@ -7,12 +7,13 @@ from Classer import TypeIdentifier
 typeIdentifier=TypeIdentifier()
 
 class dx_indexer:
-    def __init__(self):
+    def __init__(self, code):
         self.dictionary=None
         self.Type=None
         self.friendTypes=None
-        self.plus=dx_gplus_crawler()
-        self.plus.fetchMe()
+        self.plus=dx_gplus_crawler(code)
+        if self.plus.getProgress()['Status'] != 'error': 
+            self.plus.fetchMe()
         self.stopwords=set()
         self.loadStopWords()
         self.TFbyID={}
@@ -22,11 +23,11 @@ class dx_indexer:
         self.plus.setProgress({'Status':'Reday','RunningJob':'Nothing', 'Progress':0})
         
         
-    def logout(self):
+    def logout(self, code):
         self.dictionary=None
         self.Type=None
         self.friendTypes=None
-        self.plus.relogin()
+        self.plus.relogin(code)
         self.plus.fetchMe()
         self.TFbyID={}
         self.TFtotal={}
@@ -35,13 +36,16 @@ class dx_indexer:
         self.plus.setProgress({'Status':'Reday','RunningJob':'Nothing', 'Progress':0})
         
     def loadStopWords(self):
-        file = open("stop_words.txt")
-        while 1:
-            line = file.readline()
-            if not line:
-                break
-            line=re.sub(r'[^\w]', '', line)
-            self.stopwords.add(line)
+        #file = open("stop_words.txt")
+        #while 1:
+        #    line = file.readline()
+        #    if not line:
+        #        break
+        #    line=re.sub(r'[^\w]', '', line)
+        #    self.stopwords.add(line)
+        import stop_words
+        for x in stop_words.stop_words:
+            self.stopwords.add(x)
             
     def buildTF(self):
         self.plus.setProgress({'Status':'Building index','RunningJob':'Building indexes', 'Progress':0})
@@ -94,6 +98,8 @@ class dx_indexer:
         
     def queryCompletion(self, query):
         chars=None
+        query = re.sub(r'[^\w]', ' ', query.lower())
+        
         qwords=query.split()
         cursor=len(qwords)-1
         while(cursor>=0 and len(qwords[cursor])==0):
@@ -129,6 +135,8 @@ class dx_indexer:
         return {'type':self.Type}
         
     def getHelperList(self, query):
+        query=re.sub(r'[^\w]', ' ', query.lower())
+        
         if(self.friendTypes is None):
             self.friendTypes={}
             if(self.plus.friends is None):
@@ -158,7 +166,7 @@ class dx_indexer:
         return self.plus.progress
     
 if __name__ == '__main__':
-    index=dx_indexer()
+    index=dx_indexer("ssas")
     print index.getNameById('114813190598462470004')
     print index.queryCompletion('data ')
     print index.getHelperList('data ')

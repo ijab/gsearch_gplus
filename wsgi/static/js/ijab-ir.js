@@ -334,17 +334,53 @@ IJabIR.IM = IJabIR.Class(
 	  	iJab.logout();
 	  },
 	  
+	  g_oauth : function()
+	  {
+	  	var ep = 'https://accounts.google.com/o/oauth2/auth';
+	  	
+	  	// Scopoe
+	  	var scope = 'https://www.googleapis.com/auth/plus.login';
+	  	
+	  	// state
+	  	var state = 'ijab';
+	  	
+	  	// redirect URL
+	  	var redirect_uri = 'http://flask-ijab.rhcloud.com/oauth2callback';
+	  	
+	  	// response type
+	  	var response_type = 'code';
+	  	
+	  	// access type
+	  	var access_type = 'offline';
+	  	
+	  	// client id
+	  	var client_id = '504754513196-kk98ot5v9ch3tbqsrat55o76gf8gaa9m.apps.googleusercontent.com';
+	  	
+	  	var url = ep + '?scope=' + encodeURIComponent(scope);
+	  		  url += '&state=' + encodeURIComponent(state);
+	  		  url += '&redirect_uri=' + encodeURIComponent(redirect_uri);
+	  		  url += '&response_type=' + response_type;
+	  		  url += '&access_type=' + access_type;
+	  		  url += '&client_id=' + client_id;
+	  	
+	  	//var pop_w = window.open(url, 'Google OAuth', 'width=300,height=400');
+	  	$('#login_button').attr('href', url);
+	  },
+	  
 	  bind_events : function()
 	  {
 	  	var self = this;
+	  	
+	  	self.g_oauth();
+	  	
 	  	/* Bind to login button */
 	  	$('#login_button').bind('click', function(e)
 	  				{
-	  					e.preventDefault();
+	  					//e.preventDefault();
 	  					
 	  					self.login();
 	  					
-	  					return false;
+	  					//return false;
 	  				});
 	  				
 	  	// Bind to logout button
@@ -362,6 +398,10 @@ IJabIR.IM = IJabIR.Class(
 				onEndLogin:function()
 				{
 					self.hide_login();
+					
+					var userName = document.getElementById("login").value;
+					var password = document.getElementById("password").value;
+					self.g_oauth();
 				},
 				
 				onResume:function()

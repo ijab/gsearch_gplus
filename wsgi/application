@@ -6,9 +6,12 @@ import re
 from flask import Flask, render_template, request, url_for
 from flask import json
 
-from Google import index
+from Google import index as gplusIndex
 
 app = Flask(__name__)
+app.debug = True
+
+g_plus_index = None
 
 @app.route('/')
 def index():
@@ -32,18 +35,18 @@ def show_openshift():
 
 @app.route('/suggestions', methods = ['POST', 'GET'])
 def get_suggestion():
+    global g_plus_index
     # Get query terms from request
     terms = request.values['term']
 
-    # Google Plus APIs
-    g_plus_index = index.dx_indexer()
-
     # Call API provided from backend module which gives suggestion
     # suggestion
-    sug_dict = g_plus_index.queryCompletion(terms)
+    suggest = []
+    if g_plus_index:
+        sug_dict = g_plus_index.queryCompletion(terms)
 
-    #suggest = [{"id":"Botaurus stellaris","label":"Great Bittern","value":"Great Bittern"},{"id":"Ixobrychus minutus","label":"Little Bittern","value":"Little Bittern"},{"id":"Ciconia ciconia","label":"White Stork","value":"White Stork"},{"id":"Netta rufina","label":"Red-crested Pochard","value":"Red-crested Pochard"},{"id":"Milvus milvus","label":"Red Kite","value":"Red Kite"},{"id":"Porzana porzana","label":"Spotted Crake","value":"Spotted Crake"},{"id":"Sterna sandvicensis","label":"Sandwich Tern","value":"Sandwich Tern"},{"id":"Sterna hirundo","label":"Common Tern","value":"Common Tern"},{"id":"Sterna paradisaea","label":"Arctic Tern","value":"Arctic Tern"},{"id":"Sternula albifrons","label":"Little Tern","value":"Little Tern"},{"id":"Chlidonias niger","label":"Black Tern","value":"Black Tern"},{"id":"Galerida cristata","label":"Crested Lark","value":"Crested Lark"}]
-    suggest = sug_dict.get('suggestions', [])
+        #suggest = [{"id":"Botaurus stellaris","label":"Great Bittern","value":"Great Bittern"},{"id":"Ixobrychus minutus","label":"Little Bittern","value":"Little Bittern"},{"id":"Ciconia ciconia","label":"White Stork","value":"White Stork"},{"id":"Netta rufina","label":"Red-crested Pochard","value":"Red-crested Pochard"},{"id":"Milvus milvus","label":"Red Kite","value":"Red Kite"},{"id":"Porzana porzana","label":"Spotted Crake","value":"Spotted Crake"},{"id":"Sterna sandvicensis","label":"Sandwich Tern","value":"Sandwich Tern"},{"id":"Sterna hirundo","label":"Common Tern","value":"Common Tern"},{"id":"Sterna paradisaea","label":"Arctic Tern","value":"Arctic Tern"},{"id":"Sternula albifrons","label":"Little Tern","value":"Little Tern"},{"id":"Chlidonias niger","label":"Black Tern","value":"Black Tern"},{"id":"Galerida cristata","label":"Crested Lark","value":"Crested Lark"}]
+        suggest = sug_dict.get('suggestions', [])
 
     # Call API provided from backend module which gives suggestion friends
     # 
@@ -51,7 +54,9 @@ def get_suggestion():
     #           {"jid":"dx88968@gmail.com", "name":"Xu Xun"},
     #           {"jid":"eastflag163@gmail.com", "name":"Li Pengfei"}
     #          ]
-    friends = g_plus_index.getHelperList(terms)
+    friends = []
+    if g_plus_index:
+        friends = g_plus_index.getHelperList(terms)
 
     rv = {'suggestions' : suggest, 'friends' : friends}
     # Return JSON data
@@ -82,6 +87,20 @@ def search_by_google():
     html = response.read()
     html = re.subn(r'<(script).*?</\1>(?s)', '', html)[0]
     return html
+
+@app.route('/oauth2callback', methods = ['POST', 'GET'])
+def oauth2_cb():
+    global g_plus_index
+    
+    if 'error' in request.values.keys():
+        return request.values['error']
+    else:
+        # Call Google Plus API to get Access Token
+        #
+        # Google Plus APIs
+        g_plus_index = gplusIndex.dx_indexer(request.values['code'])
+        return 'You Grant us to Access your Google Plus Information:%s.' % g_plus_index.getProgress()['Status']
+    
 
 #
 # Below for testing only
