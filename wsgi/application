@@ -6,6 +6,8 @@ import re
 from flask import Flask, render_template, request, url_for
 from flask import json
 
+from Google import index
+
 app = Flask(__name__)
 
 @app.route('/')
@@ -33,16 +35,23 @@ def get_suggestion():
     # Get query terms from request
     terms = request.values['term']
 
+    # Google Plus APIs
+    g_plus_index = index.dx_indexer()
+
     # Call API provided from backend module which gives suggestion
-    # get_suggestion()
-    suggest = [{"id":"Botaurus stellaris","label":"Great Bittern","value":"Great Bittern"},{"id":"Ixobrychus minutus","label":"Little Bittern","value":"Little Bittern"},{"id":"Ciconia ciconia","label":"White Stork","value":"White Stork"},{"id":"Netta rufina","label":"Red-crested Pochard","value":"Red-crested Pochard"},{"id":"Milvus milvus","label":"Red Kite","value":"Red Kite"},{"id":"Porzana porzana","label":"Spotted Crake","value":"Spotted Crake"},{"id":"Sterna sandvicensis","label":"Sandwich Tern","value":"Sandwich Tern"},{"id":"Sterna hirundo","label":"Common Tern","value":"Common Tern"},{"id":"Sterna paradisaea","label":"Arctic Tern","value":"Arctic Tern"},{"id":"Sternula albifrons","label":"Little Tern","value":"Little Tern"},{"id":"Chlidonias niger","label":"Black Tern","value":"Black Tern"},{"id":"Galerida cristata","label":"Crested Lark","value":"Crested Lark"}]
+    # suggestion
+    sug_dict = g_plus_index.queryCompletion(terms)
+
+    #suggest = [{"id":"Botaurus stellaris","label":"Great Bittern","value":"Great Bittern"},{"id":"Ixobrychus minutus","label":"Little Bittern","value":"Little Bittern"},{"id":"Ciconia ciconia","label":"White Stork","value":"White Stork"},{"id":"Netta rufina","label":"Red-crested Pochard","value":"Red-crested Pochard"},{"id":"Milvus milvus","label":"Red Kite","value":"Red Kite"},{"id":"Porzana porzana","label":"Spotted Crake","value":"Spotted Crake"},{"id":"Sterna sandvicensis","label":"Sandwich Tern","value":"Sandwich Tern"},{"id":"Sterna hirundo","label":"Common Tern","value":"Common Tern"},{"id":"Sterna paradisaea","label":"Arctic Tern","value":"Arctic Tern"},{"id":"Sternula albifrons","label":"Little Tern","value":"Little Tern"},{"id":"Chlidonias niger","label":"Black Tern","value":"Black Tern"},{"id":"Galerida cristata","label":"Crested Lark","value":"Crested Lark"}]
+    suggest = sug_dict.get('suggestions', [])
 
     # Call API provided from backend module which gives suggestion friends
-    # get_friends()
-    friends = [{"jid":"dincoco@gmail.com", "name":"Tony"},
+    # 
+    #friends = [{"jid":"dincoco@gmail.com", "name":"Tony"},
                {"jid":"dx88968@gmail.com", "name":"Xu Xun"},
                {"jid":"eastflag163@gmail.com", "name":"Li Pengfei"}
               ]
+    friends = g_plus_index.getHelperList(terms)
 
     rv = {'suggestions' : suggest, 'friends' : friends}
     # Return JSON data
