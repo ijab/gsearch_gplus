@@ -21,22 +21,26 @@
         </div>
         <h1>Search with Google+</h1>
 
-		<form>
-		  <fieldset>
-		    <ol>
-		      <li>
-		        <input type="text" id="query_terms" name="query_terms">
-		      </li>
-		    </ol> 
-		
-		    <div class="buttons">
-		      <button type="submit" id="search_button">Search</button>
-		    </div>
-		  </fieldset>
-		</form>
+				<fieldset>
+			    <ol>
+			      <li>
+			        <input type="text" id="query_terms" name="query_terms">
+			      </li>
+			    </ol> 
+			
+			    <div class="buttons">
+			      <button type="button" id="search_button">Search</button>
+			      <button type="button" id="clear_button" title="Clear search result" style="margin-left: 10px;display:none;">Clear</button>
+			    </div>
+			  </fieldset>
 
       </div>
     </div>
+    
+    <div id="search_result">
+    	
+    </div>
+    
     <div id="footer">
       <p class="corner"></p>
       <p class="copyright">Copyright iJab</p>
@@ -69,14 +73,12 @@
 			</div>
 		</div>
 		
-		<div id="chat-helper-widget" class="ui-widget-content modal">
+		<div id="chat-helper-widget" class="ui-widget-content">
 	  	<div id="chat-heading" class="heading">
 				Ask Your Friend?
 			</div>
 			<div id="chat-content" class="modal-content">
-				<ul id="chat-gmail-roster-list">
 				
-				</ul>
 			</div>
 		</div>
 		

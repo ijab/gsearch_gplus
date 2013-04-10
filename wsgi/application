@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import os
 import sys
+import urllib2
+import re
 from flask import Flask, render_template, request, url_for
 from flask import json
 
@@ -8,50 +10,69 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-        return render_template('index.html')
+    return render_template('index.html')
 
 @app.route('/health')
 def monitor():
-        return "1"
+    return "1"
 
 @app.route('/env')
 def get_env():
-        environ = request.environ
-        response_body = ['%s: %s' % (key, value)
+    environ = request.environ
+    response_body = ['%s: %s' % (key, value)
                     for key, value in sorted(environ.items())]
-	response_body = '\n'.join(response_body)
-	return response_body
+    response_body = '\n'.join(response_body)
+    return response_body
 
 @app.route('/openshift')
 def show_openshift():
-	return render_tempalte('openshift.html')
+	return render_template('openshift.html')
 
 @app.route('/suggestions', methods = ['POST', 'GET'])
 def get_suggestion():
-        # Get query terms from request
-        terms = request.values['term']
+    # Get query terms from request
+    terms = request.values['term']
 
-        # Call API provided from backend module which gives suggestion
-        # get_suggestion()
-        suggest = [{"id":"Botaurus stellaris","label":"Great Bittern","value":"Great Bittern"},{"id":"Ixobrychus minutus","label":"Little Bittern","value":"Little Bittern"},{"id":"Ciconia ciconia","label":"White Stork","value":"White Stork"},{"id":"Netta rufina","label":"Red-crested Pochard","value":"Red-crested Pochard"},{"id":"Milvus milvus","label":"Red Kite","value":"Red Kite"},{"id":"Porzana porzana","label":"Spotted Crake","value":"Spotted Crake"},{"id":"Sterna sandvicensis","label":"Sandwich Tern","value":"Sandwich Tern"},{"id":"Sterna hirundo","label":"Common Tern","value":"Common Tern"},{"id":"Sterna paradisaea","label":"Arctic Tern","value":"Arctic Tern"},{"id":"Sternula albifrons","label":"Little Tern","value":"Little Tern"},{"id":"Chlidonias niger","label":"Black Tern","value":"Black Tern"},{"id":"Galerida cristata","label":"Crested Lark","value":"Crested Lark"}]
+    # Call API provided from backend module which gives suggestion
+    # get_suggestion()
+    suggest = [{"id":"Botaurus stellaris","label":"Great Bittern","value":"Great Bittern"},{"id":"Ixobrychus minutus","label":"Little Bittern","value":"Little Bittern"},{"id":"Ciconia ciconia","label":"White Stork","value":"White Stork"},{"id":"Netta rufina","label":"Red-crested Pochard","value":"Red-crested Pochard"},{"id":"Milvus milvus","label":"Red Kite","value":"Red Kite"},{"id":"Porzana porzana","label":"Spotted Crake","value":"Spotted Crake"},{"id":"Sterna sandvicensis","label":"Sandwich Tern","value":"Sandwich Tern"},{"id":"Sterna hirundo","label":"Common Tern","value":"Common Tern"},{"id":"Sterna paradisaea","label":"Arctic Tern","value":"Arctic Tern"},{"id":"Sternula albifrons","label":"Little Tern","value":"Little Tern"},{"id":"Chlidonias niger","label":"Black Tern","value":"Black Tern"},{"id":"Galerida cristata","label":"Crested Lark","value":"Crested Lark"}]
 
-        # Return JSON data
-        return json.JSONEncoder().encode(suggest)
+    # Call API provided from backend module which gives suggestion friends
+    # get_friends()
+    friends = [{"jid":"dincoco@gmail.com", "name":"Tony"},
+               {"jid":"dx88968@gmail.com", "name":"Xu Xun"},
+               {"jid":"eastflag163@gmail.com", "name":"Li Pengfei"}
+              ]
+
+    rv = {'suggestions' : suggest, 'friends' : friends}
+    # Return JSON data
+    return json.JSONEncoder().encode(rv)
 
 @app.route('/friends', methods = ['POST', 'GET'])
 def get_friends():
-        # Get query terms from request
-        terms = request.values['term']
+    # Get query terms from request
+    terms = request.values['term']
 
-        # Call API provided from backend module which gives suggestion friends
-        # get_friends()
-        friends = [{"jid":"dincoco@gmail.com", "name":"Tony"},
-                   {"jid":"dx88968@gmail.com", "name":"Xu Xun"},
-                   {"jid":"eastflag163@gmail.com", "name":"Li Pengfei"}
-                  ]
+    # Call API provided from backend module which gives suggestion friends
+    # get_friends()
+    friends = [{"jid":"dincoco@gmail.com", "name":"Tony"},
+           {"jid":"dx88968@gmail.com", "name":"Xu Xun"},
+           {"jid":"eastflag163@gmail.com", "name":"Li Pengfei"}
+          ]
 
-        # Return JSON data
-        return json.JSONDecoder().encode(friends)
+    # Return JSON data
+    return json.JSONDecoder().encode(friends)
+
+@app.route('/search', methods = ['POST', 'GET'])
+def search_by_google():
+    search_url = request.values['url'];
+
+    req = urllib2.Request(urllib2.unquote(search_url))
+    req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:20.0) Gecko/20100101 Firefox/20.0')
+    response = urllib2.urlopen(req)
+    html = response.read()
+    html = re.subn(r'<(script).*?</\1>(?s)', '', html)[0]
+    return html
 
 #
 # Below for testing only

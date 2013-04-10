@@ -189,15 +189,54 @@ IJabIR.Search = IJabIR.Class(
 		/*
 		 * Functions
 		 */
-		get_suggestion : function()
+		add_friends : function(friends)
 		{
+			/* <div class="ijab-contactview-item ijab-contactview-item-normal" id="ijabuser_victor.hashpar@gmail.com" title="Victor Hashpar&lt;victor.hashpar@gmail.com&gt;"><div class="statusicon"> <img src="http://flask-ijab.rhcloud.com/ijab_im/ijab/images/status/available.png"> </div> <div class="names names_nostatus" title="Victor Hashpar&lt;victor.hashpar@gmail.com&gt;"> <span>Victor Hashpar</span><input type="text" tabindex="0" class="ijab-contactview-item-editor" style="display: none;"><br> <span class="ijab-gray"></span> </div> </div>
+			*/
+			$("#chat-content").empty();
+			
+			var len_f = friends.length;
+			for(var i = 0; i < len_f; ++i)
+			{
+				var div_jid = 'ijabuser_' + friends[i].jid;
+				var div_title = friends[i].name + '&lt;' + friends[i].jid + '&gt';
+				
+				var img_src = 'http://flask-ijab.rhcloud.com/ijab_im/ijab/images/status/available.png';
+				$('div.ijab-contactview-item').each(function(index)
+										{
+											if($(this).attr('id').indexOf(friends[i].jid) >= 0)
+											{
+												img_src = $(this).find('img').attr('src');
+												return;
+											}											
+										});
+				
+				
+				var f_html = '<div class="ijab-contactview-item ijab-contactview-item-normal" ';
+					  f_html += 'onclick="iJab.talkTo(\'' + friends[i].jid + '\')" ';
+					  f_html += 'id="' + div_jid + '" title="' + div_title + '">';
+					  f_html += '<div class="statusicon"> <img src="' + img_src + '"> </div> <div class="names names_nostatus" title="' + div_title + '"> <span>' + friends[i].name + '</span><input type="text" tabindex="0" class="ijab-contactview-item-editor" style="display: none;"><br> <span class="ijab-gray"></span> </div> </div>';
+					  
+				$("#chat-content").append(f_html);
+			}
 		},
 		
 		bind_events : function()
 		{
+			var self = this;
 			// Set autocmoplete
-			$( "#query_terms" ).autocomplete({
-			      source: "/suggestions",
+			$("#query_terms").autocomplete({
+			      source: function(request, response){
+			      		var parent_self = self;
+			      		$.getJSON( "/suggestions", {
+            								term: $("#query_terms").val()
+          									}, function(data)
+		          									{
+		          										response(data.suggestions);
+		          										parent_self.add_friends(data.friends);
+		          									}
+          							);
+          					},
 			      minLength: 2,
 			      select: function( event, ui ) {
 			        //log( ui.item ?
@@ -207,7 +246,43 @@ IJabIR.Search = IJabIR.Class(
     		});
     		
     	// Make friendes list window floating and draggable
-    	$( "#chat-helper-widget" ).draggable();
+    	$("#chat-helper-widget").draggable();
+    	
+    	// Bind to search button
+    	$("#search_button").bind('click', function(e){
+    																				e.preventDefault();
+    																				self.do_search();
+    																				return false;
+    																		});
+    																		
+    	// Bind to clear search result button
+    	$("#clear_button").bind('click', function(e){
+    																				e.preventDefault();
+    																				self.clear_search_result();
+    																				return false;
+    																		});
+		},
+		
+		do_search : function()
+		{
+			$('#search_result').show();
+			var url = encodeURIComponent('http://www.google.com/search?hl=en&q=' + $("#query_terms").val());
+			$('#search_result').load('/search?url=' + url, 
+															function(){
+																$('#wrapper').height(120);
+																$('#logo').hide();
+																$('#clear_button').show();
+															});
+		},
+		
+		clear_search_result : function()
+		{
+			$('#search_result').hide();
+			$('#search_result').empty();
+			
+			$('#wrapper').height('60%');
+			$('#logo').show();
+			$('#clear_button').hide();
 		}
 });
 
@@ -285,6 +360,11 @@ IJabIR.IM = IJabIR.Class(
 	  	var ijabHandler = 
 			{
 				onEndLogin:function()
+				{
+					self.hide_login();
+				},
+				
+				onResume:function()
 				{
 					self.hide_login();
 				},
