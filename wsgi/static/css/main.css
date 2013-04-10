@@ -1088,7 +1088,7 @@ input[type="text"], input[type="email"], input[type="password"], textarea {
   display: block;
   margin: 0;
   padding: 6px;
-  width: auto;
+  width: 300px;
 }
 
 input[disabled], textarea[disabled] {
@@ -1462,10 +1462,10 @@ ol { float: left; }
   text-transform: none;
 }
 
-#modal {
+#modal, .modal {
 	visibility:hidden;
 	width:360px;
-	height:189px;
+	height:235px;
 	padding:8px;
 
 	background:rgba(0,0,0,.3);
@@ -1483,7 +1483,7 @@ ol { float: left; }
 }
 
 
-#heading {
+#heading, .heading {
 	width:360px;
 	height:44px;
 
@@ -1519,9 +1519,9 @@ ol { float: left; }
 	text-shadow:0px 1px 0px #fff;
 }
 
-#content {
+#content, .model-content {
 	width:360px;
-	height:144px;
+	height:190px;
 
 	background:#fcfcfc;
 
@@ -1533,20 +1533,6 @@ ol { float: left; }
 	-moz-border-radius:0px 0px 4px 4px;
 	border-radius:0px 0px 4px 4px;
 }
-
-#content p {
-	font-size:13px;
-	font-weight:normal;
-	text-align:center;
-	line-height:22px;
-	color:#555555;
-
-	width:100%;
-	float: left;
-
-	margin:19px 0;
-}
-
 
 .button {
 	width:138px;
@@ -1626,7 +1612,7 @@ ol { float: left; }
         
 	#modal {
 		width:284px;
-		height:156px;
+		height:235px;
 		padding:8px;
 
 		margin-left:-150px !important;
@@ -1641,11 +1627,7 @@ ol { float: left; }
 	}
 	#content {
 		width:284px;
-		height:128px;
-   	}
-   	#content p {
-   		width:284px;
-   		font-size:0.688em;
+		height:190px;
    	}
    	.button img { 
 		width:23px;
@@ -1671,4 +1653,27 @@ ol { float: left; }
   top: 0;
   right:0;
   padding:3px;
+}
+
+#chat-helper-widget {
+	visibility:visible;
+	width:180px;
+	
+	-webkit-border-radius:5px;
+	-moz-border-radius:5px;
+	border-radius:5px;
+
+	top:10% !important;
+	left:80% !important;
+	margin-top:-94px !important;
+	margin-left:-180px !important;
+	z-index:101;
+}
+
+#chat-heading {
+	width:180px;
+}
+
+#chat-content {
+	width:180px;
 }

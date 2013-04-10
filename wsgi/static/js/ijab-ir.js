@@ -177,6 +177,8 @@ IJabIR.Search = IJabIR.Class(
      */
     initialize: function(options) {
         IJabIR.Util.extend(this, options);
+        
+        this.bind_events();
     },
     
     /*
@@ -189,8 +191,25 @@ IJabIR.Search = IJabIR.Class(
 		 */
 		get_suggestion : function()
 		{
+		},
+		
+		bind_events : function()
+		{
+			// Set autocmoplete
+			$( "#query_terms" ).autocomplete({
+			      source: "/suggestions",
+			      minLength: 2,
+			      select: function( event, ui ) {
+			        //log( ui.item ?
+			        //  "Selected: " + ui.item.value + " aka " + ui.item.id :
+			        //  "Nothing selected, input was " + this.value );
+      				}
+    		});
+    		
+    	// Make friendes list window floating and draggable
+    	$( "#chat-helper-widget" ).draggable();
 		}
-}
+});
 
 /**
  * Class: IJabIR.IM
@@ -206,6 +225,8 @@ IJabIR.IM = IJabIR.Class(
      */
     initialize: function(options) {
         IJabIR.Util.extend(this, options);
+        
+        this.bind_events();
     },
     
     /*
@@ -220,7 +241,7 @@ IJabIR.IM = IJabIR.Class(
 		 */
 	  login : function()
 	  {
-	  	if(typeof iJab == undefined) return false;
+	  	if(typeof iJab == "undefined") return false;
 	  	
 	  	var userName = document.getElementById("login").value;
     	var password = document.getElementById("password").value;
@@ -233,7 +254,7 @@ IJabIR.IM = IJabIR.Class(
 	  
 	  logout : function()
 	  {
-	  	if(typeof iJab == undefined) return false;
+	  	if(typeof iJab == "undefined") return false;
 	  	
 	  	iJab.logout();
 	  },
@@ -261,8 +282,6 @@ IJabIR.IM = IJabIR.Class(
 	  					return false;
 	  				});
 	  	
-	  	if(typeof iJab == undefined) return false;
-	  	
 	  	var ijabHandler = 
 			{
 				onEndLogin:function()
@@ -281,7 +300,19 @@ IJabIR.IM = IJabIR.Class(
 				}
 			};
 			
-			iJab.addListener(ijabHandler);
+			var attach_ijab_listener = function()
+							{
+								if(typeof iJab == "undefined")
+								{
+									setTimeout(attach_ijab_listener, 1000);
+									return false;
+								}	
+								else
+								{
+									iJab.addListener(ijabHandler);
+								}
+							};
+			attach_ijab_listener();			
 	  },
 	  
 	  show_login : function()
@@ -302,11 +333,13 @@ IJabIR.IM = IJabIR.Class(
 	  	
 	  	$('#modal').trigger('reveal:close');
 	  }
-}
+});
 
 
 $(document).ready(function() {
 			var im_obj = new IJabIR.IM();
 			
 			im_obj.show_login();
+			
+			var search_obj = new IJabIR.Search();
 		});
