@@ -48,9 +48,9 @@ def get_suggestion():
     # Call API provided from backend module which gives suggestion friends
     # 
     #friends = [{"jid":"dincoco@gmail.com", "name":"Tony"},
-               {"jid":"dx88968@gmail.com", "name":"Xu Xun"},
-               {"jid":"eastflag163@gmail.com", "name":"Li Pengfei"}
-              ]
+    #           {"jid":"dx88968@gmail.com", "name":"Xu Xun"},
+    #           {"jid":"eastflag163@gmail.com", "name":"Li Pengfei"}
+    #          ]
     friends = g_plus_index.getHelperList(terms)
 
     rv = {'suggestions' : suggest, 'friends' : friends}
