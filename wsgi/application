@@ -79,9 +79,10 @@ def get_friends():
 
 @app.route('/search', methods = ['POST', 'GET'])
 def search_by_google():
-    search_url = request.values['url'];
+    search_url = 'http://www.google.com/search?hl=en&q='
+    search_url += request.values['term'];
 
-    req = urllib2.Request(urllib2.unquote(search_url))
+    req = urllib2.Request(search_url)
     req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:20.0) Gecko/20100101 Firefox/20.0')
     response = urllib2.urlopen(req)
     html = response.read()
