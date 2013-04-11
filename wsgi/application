@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 import sys
-import urllib2
+import urllib, urllib2
 import re
 from flask import Flask, render_template, request, url_for
 from flask import json
@@ -80,7 +80,10 @@ def get_friends():
 @app.route('/search', methods = ['POST', 'GET'])
 def search_by_google():
     search_url = urllib2.unquote(request.values['url'])
-    search_url += request.values['query_string']
+    search_url += '?'
+    query_string = urllib2.unquote(request.values['query_string'])
+    query_string = urllib.urlencode(urllib2.urlparse.parse_qs(query_string))
+    search_url += query_string
 
     req = urllib2.Request(search_url)
     req.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:20.0) Gecko/20100101 Firefox/20.0')
