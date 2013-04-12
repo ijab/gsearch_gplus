@@ -7,6 +7,8 @@ import sys
 import re
 import httplib, urllib
 import json
+import time
+import thread
 
 from apiclient.discovery import build
 from oauth2client.file import Storage
@@ -35,6 +37,24 @@ with information from the APIs Console <https://code.google.com/apis/console>.
 gflags.DEFINE_enum('logging_level', 'ERROR',
     ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
     'Set the level of logging detail.')
+    
+def fetchMe(self):
+        self.setProgress({'Status':'Crawling Info', 'RunningJob':'Fetching User\'s own Information', 'Progress':0})
+        self.person = self.service.people().get(userId='me').execute(http=self.http)
+        self.fetchPersonInfo('me')
+        self.setProgress({'Progress':5})
+        self.friends = self.service.people().list(userId='me',collection='visible',orderBy='alphabetical', pageToken=None, maxResults=None).execute(http=self.http)
+        totalfriends=0
+        processedfriends=0
+        if(self.friends.has_key('totalItems')):
+            totalfriends=self.friends['totalItems']
+        for item in self.friends.get('items', []):
+            self.fetchPersonInfo(item['id'])
+            processedfriends=processedfriends+1
+            self.setProgress({'RunningJob':'Fetching Information of %d / %d friends' % (processedfriends, totalfriends) , 'Progress':processedfriends*70/totalfriends+5})
+        self.setProgress({'Status':'Crawling Info', 'RunningJob':'Nothing', 'Progress':100})
+        self.callback()
+        self.setProgress({'Status':'Ready','RunningJob':'Nothing', 'Progress':100})
 
 
 class dx_gplus_crawler:
@@ -65,7 +85,6 @@ class dx_gplus_crawler:
             self.progress={'Status':'error', 'RunningJob':'Nothing', 'Progress':0, 'msg' : str(res)}
             print str(res)
         
-        
     def relogin(self, code):
         params = urllib.urlencode({'code':code,
                                    'client_id': '504754513196-kk98ot5v9ch3tbqsrat55o76gf8gaa9m.apps.googleusercontent.com',
@@ -91,19 +110,6 @@ class dx_gplus_crawler:
         else:
             self.progress={'Status':'error', 'RunningJob':'Nothing', 'Progress':0}
         
-    def fetchMe(self):
-        self.setProgress({'Status':'Crawling Info', 'RunningJob':'Fetching User\'s own Information', 'Progress':0})
-        self.person = self.service.people().get(userId='me').execute(http=self.http)
-        self.fetchPersonInfo('me')
-        self.setProgress({'Progress':5})
-        self.friends = self.service.people().list(userId='me',collection='visible',orderBy='alphabetical', pageToken=None, maxResults=None).execute(http=self.http)
-        totalfriends=0
-        processedfriends=0
-        if(self.friends.has_key('totalItems')):
-            totalfriends=self.friends['totalItems']
-        for item in self.friends.get('items', []):
-            self.fetchPersonInfo(item['id'])
-            self.setProgress({'RunningJob':'Fetching Information of %d / %d friends' % (processedfriends, totalfriends) , 'Progress':processedfriends/totalfriends*70+5})
         
     def parseActivity(self, activity):
         content=[]
@@ -215,8 +221,16 @@ class dx_gplus_crawler:
             
     def getProgress(self):
         return self.progress
+        
+    def startCrawl(self):
+        thread.start_new_thread(fetchMe, (self,))
+        
+    def setCallback(self, function):
+        self.callback=function
 
 if __name__ == '__main__':
-    dx_crawler=dx_gplus_crawler('sasasw')
-    dx_crawler.fetchMe()
-    print dx_crawler.InfoList
+    dx_crawler=dx_gplus_crawler()
+    dx_crawler.startCrawl()
+    while 1:
+        print dx_crawler.progress
+        time.sleep(1)

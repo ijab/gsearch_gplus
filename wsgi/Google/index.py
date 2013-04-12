@@ -1,5 +1,6 @@
 import re
 import operator
+import time
 
 from plus import dx_gplus_crawler
 from Classer import TypeIdentifier
@@ -12,15 +13,14 @@ class dx_indexer:
         self.Type=None
         self.friendTypes=None
         self.plus=dx_gplus_crawler(code)
+        self.plus.setCallback(self.buildTF)
         if self.plus.getProgress()['Status'] != 'error': 
-            self.plus.fetchMe()
+            self.plus.startCrawl()
         self.stopwords=set()
         self.loadStopWords()
         self.TFbyID={}
         self.TFtotal={}
         self.rightAjContext={}
-        self.buildTF()
-        self.plus.setProgress({'Status':'Reday','RunningJob':'Nothing', 'Progress':0})
         
         
     def logout(self, code):
@@ -28,12 +28,11 @@ class dx_indexer:
         self.Type=None
         self.friendTypes=None
         self.plus.relogin(code)
-        self.plus.fetchMe()
+        self.plus.setCallback(self.buildTF)
+        self.plus.startCrawl()
         self.TFbyID={}
         self.TFtotal={}
         self.rightAjContext={}
-        self.buildTF()
-        self.plus.setProgress({'Status':'Reday','RunningJob':'Nothing', 'Progress':0})
         
     def loadStopWords(self):
         #file = open("stop_words.txt")
@@ -48,7 +47,7 @@ class dx_indexer:
             self.stopwords.add(x)
             
     def buildTF(self):
-        self.plus.setProgress({'Status':'Building index','RunningJob':'Building indexes', 'Progress':0})
+        self.plus.setProgress({'Status':'Building index','RunningJob':'Building indexes', 'Progress':75})
         if(self.plus.InfoList is not None):
             for id in self.plus.InfoList.keys():
                 TF={}
@@ -167,9 +166,14 @@ class dx_indexer:
     
 if __name__ == '__main__':
     index=dx_indexer("ssas")
-    print index.getNameById('114813190598462470004')
-    print index.queryCompletion('data ')
-    print index.getHelperList('data ')
-    index.logout()
-    print index.queryCompletion('information ')
+    while 1:
+        print index.getProgress()
+        time.sleep(2)
+        if(index.getProgress()['Status']=='Ready'):
+            print index.queryCompletion('data ')
+    #print index.getNameById('114813190598462470004')
+    #print index.queryCompletion('data ')
+    #print index.getHelperList('data ')
+    #index.logout()
+    #print index.queryCompletion('information ')
     
