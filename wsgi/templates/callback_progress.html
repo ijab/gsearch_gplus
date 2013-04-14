@@ -1,0 +1,68 @@
+<!doctype html>
+ 
+<html lang="en">
+<head>
+  <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Google Search Enhanced by Google+</title>
+    <meta charset="utf-8">
+    <meta name="description" content="Google Search enhanced by Google Plus. Information Retrieval, Python, Flask, XMPP, Punjab, jQuery.">
+    <link rel="stylesheet" href="/static/css/flick/jquery-ui-1.10.2.custom.css" />
+  <style>
+  .progress-label {
+    float: left;
+    margin-left: 50%;
+    margin-top: 5px;
+    font-weight: bold;
+    text-shadow: 1px 1px 0 #fff;
+  }
+  </style>
+
+  <script type="text/javascript" src="/static/js/jquery-1.9.1.min.js"></script>
+  <script type="text/javascript" src="/static/js/jquery-ui-1.10.2.custom.min.js"></script>
+
+  <script>
+  var progress_info = {{ progress|tojson|safe }};
+
+  $(function() {
+    var progressbar = $("#progressbar"),
+      progressLabel = $(".progress-label");
+ 
+    progressbar.progressbar({
+      value: false,
+      change: function() {
+        progressLabel.text(progress_info['Status'] + ": " + progressbar.progressbar("value") + "%");
+      },
+      complete: function() {
+        progressLabel.text(progress_info['Status'] + ": 100%");
+      }
+    });
+ 
+    function progress() {
+
+      // Get progress information
+      jQuery.getJSON( "/progress", 
+                                function(data)
+                                {
+                                  progress_info = data;
+                                }
+                        );
+
+      var val = progress_info['Progress'];
+ 
+      progressbar.progressbar("value", val);
+ 
+      if ( val < 99 ) {
+        setTimeout( progress, 100 );
+      }
+    }
+ 
+    setTimeout( progress, 3000 );
+  });
+  </script>
+</head>
+<body>
+ 
+<div id="progressbar"><div class="progress-label">Loading...</div></div>
+
+</body>
+</html>

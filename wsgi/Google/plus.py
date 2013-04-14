@@ -16,6 +16,7 @@ from oauth2client.client import AccessTokenCredentials
 from oauth2client.client import AccessTokenRefreshError
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.tools import run
+from apiclient.errors import *
 
 
 FLAGS = gflags.FLAGS
@@ -149,7 +150,10 @@ class dx_gplus_crawler:
                 content.append(org.get('name', ''))
         if(person.has_key('tagline')):
             content.append(person['tagline'])
-        activities_doc = self.service.activities().list(userId=id, collection='public').execute(http=self.http)
+        try:
+            activities_doc = self.service.activities().list(userId=id, collection='public').execute(http=self.http)
+        except:
+            activities_doc = {'items' : []}
 
         count = 0
         for item in activities_doc['items']:
@@ -177,9 +181,14 @@ class dx_gplus_crawler:
                 if count > 100:
                     break
                 
-                activity=self.service.activities().get(activityId=item['id']).execute(http=self.http)
-                content.extend(self.parseActivity(activity))
-                comments=self.service.comments().list(activityId=activity['id']).execute(http=self.http)
+                try:
+                    activity=self.service.activities().get(activityId=item['id']).execute(http=self.http)
+                    content.extend(self.parseActivity(activity))
+                
+                    comments=self.service.comments().list(activityId=activity['id']).execute(http=self.http)
+                except: # HttpError
+                    comments = {'items' : []}
+                
                 for comment in comments['items']:
                     content.extend(self.parseComment(comment))
                 while(comments.has_key('nextPageToken')):
@@ -190,8 +199,12 @@ class dx_gplus_crawler:
             if count > 100:
                 break
             
-        if(id=='me'):
-            moments = self.service.moments().list(userId=id, collection='vault', pageToken=None, maxResults=None, targetUrl=None, type=None).execute(http=self.http)
+        if(id == 'me'):
+            try:
+                moments = self.service.moments().list(userId=id, collection='vault', pageToken=None, maxResults=None, targetUrl=None, type=None).execute(http=self.http)
+            except: # HttpError
+                moments = {}
+
             if(moments.has_key('target')):
                 if(moments['target'].has_key('text')):
                     content.append(moments['target']['text'])

@@ -58,7 +58,14 @@ def get_suggestion():
     if g_plus_index:
         friends = g_plus_index.getHelperList(terms)
 
-    rv = {'suggestions' : suggest, 'friends' : friends}
+    # Call API provided by backend module interacting with Google+
+    # 
+    user_type = {'type' : 'Unknown'}
+
+    if g_plus_index:
+        user_type = g_plus_index.getUserType()
+
+    rv = {'suggestions' : suggest, 'friends' : friends, 'usertype' : user_type}
     # Return JSON data
     return json.JSONEncoder().encode(rv)
 
@@ -75,7 +82,7 @@ def get_friends():
           ]
 
     # Return JSON data
-    return json.JSONDecoder().encode(friends)
+    return json.JSONEncoder().encode(friends)
 
 @app.route('/search', methods = ['POST', 'GET'])
 def search_by_google():
@@ -98,14 +105,44 @@ def oauth2_cb():
     
     if 'error' in request.values.keys():
         return request.values['error']
+    elif 'progress' in request.values.keys():
+        progress = {'Status':'Crawling Info', 'RunningJob':'Fetching Google+ Information', 'Progress':0}
+
+        if g_plus_index:
+            progress = g_plus_index.getProgress()
+
+        return render_template('callback_progress.html', progress=progress)
     else:
         # Call Google Plus API to get Access Token
         #
         # Google Plus APIs
         g_plus_index = gplusIndex.dx_indexer(request.values['code'])
-        return 'You Grant us to Access your Google Plus Information:%s.' % g_plus_index.getProgress()['Status']
-    
+        progress = g_plus_index.getProgress()
+        return render_template('callback_progress.html', progress=progress)
+   
+@app.route('/usertype')
+def get_usertype():
+    global g_plus_index
 
+    user_type = {'type' : 'Unknown'}
+
+    if g_plus_index:
+        user_type = g_plus_index.getUserType()
+
+    return json.JSONEncoder().encode(user_type) 
+
+@app.route('/progress')
+def get_progress():
+
+    global g_plus_index
+
+    progress = {'Status':'Crawling Info', 'RunningJob':'Fetching Google+ Information', 'Progress':0}
+
+    if g_plus_index:
+        progress = g_plus_index.getProgress()
+
+    # Return JSON data
+    return json.JSONEncoder().encode(progress) 
 #
 # Below for testing only
 #

@@ -87,12 +87,13 @@ class dx_indexer:
         for i in range(len(chars)):
             temp=[]
             for word in candidates:
-                if(word[i]==chars[i]):
+                if( i < len(word) and word[i] == chars[i]):
                     temp.append(word)
-            if(len(candidates)==0):
+                    
+            if(len(candidates) == 0):
                 return None
             else:
-                candidates=temp
+                candidates = temp
         return candidates
         
     def queryCompletion(self, query):
@@ -120,8 +121,10 @@ class dx_indexer:
                 for w in self.rightAjContext[chars]:
                     sug=temp+' '+w
             else:
-                for w in self.guessWord(chars):
-                    sug=temp+' '+w
+                cadidates = self.guessWord(chars)
+                if cadidates:
+                    for w in self.guessWord(chars):
+                        sug=temp+' '+w
 
             suggestions.append({'id':sug, 'label':sug, 'value':sug})
             return {'suggestions':suggestions}
@@ -129,9 +132,15 @@ class dx_indexer:
             return {'suggestions':[]}
             
     def getUserType(self):
+        _type = 'Unknown'
+        
         if(self.Type is None):
             self.Type=typeIdentifier.getTypeByTF(self.TFbyID['me'])
-        return {'type':self.Type}
+        
+        if self.Type is not None:
+            _type = self.Type
+
+        return {'type':_type}
         
     def getHelperList(self, query):
         query=re.sub(r'[^\w]', ' ', query.lower())

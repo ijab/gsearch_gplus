@@ -196,7 +196,7 @@ IJabIR.Search = IJabIR.Class(
 			$("#chat-content").empty();
 			
 			var len_f = friends.length;
-			for(var i = 0; i < len_f; ++i)
+			for(var i = 0; i < len_f && i < 5; ++i)
 			{
 				var div_jid = 'ijabuser_' + friends[i].jid;
 				var div_title = friends[i].name + '&lt;' + friends[i].jid + '&gt';
@@ -221,6 +221,11 @@ IJabIR.Search = IJabIR.Class(
 			}
 		},
 		
+		set_user_type : function(user_type)
+		{
+			$("#cse_gplus_title").text("Search with Google+ -- Guessing Your Professional Area: " + user_type.type);
+		},
+		
 		bind_events : function()
 		{
 			var self = this;
@@ -234,6 +239,7 @@ IJabIR.Search = IJabIR.Class(
 		          									{
 		          										response(data.suggestions);
 		          										parent_self.add_friends(data.friends);
+		          										parent_self.set_user_type(data.usertype);
 		          									}
           							);
           					},
