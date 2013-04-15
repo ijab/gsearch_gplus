@@ -135,7 +135,8 @@ class dx_indexer:
         _type = 'Unknown'
         
         if(self.Type is None):
-            self.Type=typeIdentifier.getTypeByTF(self.TFbyID['me'])
+            sorted(self.TFbyID['me'].iteritems(), key=operator.itemgetter(1), reverse=True)
+            self.Type=typeIdentifier.getTypeByTF(self.TFbyID['me'][:100])
         
         if self.Type is not None:
             _type = self.Type
@@ -152,7 +153,8 @@ class dx_indexer:
             else:
                 for id in self.plus.InfoList.keys():
                     if(id!='me' and self.TFbyID.has_key(id)):
-                        type=typeIdentifier.getTypeByTF(self.TFbyID[id])
+                        sorted(self.TFbyID[id].iteritems(), key=operator.itemgetter(1), reverse=True)
+                        type=typeIdentifier.getTypeByTF(self.TFbyID[id][:100])
                         self.friendTypes[id]=type
         queryType=typeIdentifier.getTypeByQuery(query)
         result={}
