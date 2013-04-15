@@ -172,6 +172,9 @@ class dx_indexer:
         
     def getProgress(self):
         return self.plus.progress
+
+    def getUrlByType(self,type):
+        return typeIdentifier.getUrlByType()
     
 if __name__ == '__main__':
     index=dx_indexer("ssas")
