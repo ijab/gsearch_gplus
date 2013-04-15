@@ -120,13 +120,13 @@ class dx_indexer:
                     temp=chars
                 for w in self.rightAjContext[chars]:
                     sug=temp+' '+w
+                    suggestions.append({'id':sug, 'label':sug, 'value':sug})
             else:
                 cadidates = self.guessWord(chars)
                 if cadidates:
                     for w in self.guessWord(chars):
                         sug=temp+' '+w
-
-            suggestions.append({'id':sug, 'label':sug, 'value':sug})
+                        suggestions.append({'id':sug, 'label':sug, 'value':sug})
             return {'suggestions':suggestions}
         else:
             return {'suggestions':[]}
