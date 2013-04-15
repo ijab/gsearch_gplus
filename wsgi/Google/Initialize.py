@@ -19,8 +19,11 @@ def read_data(file_path):
         x.append(row[0].lower())
     return x
 
-client = MongoClient()
+ip = os.environ['OPENSHIFT_INTERNAL_IP']
+port = 27017
+client = MongoClient(ip, port)
 db = client.category_db
+db.authenticate('ijab', 'ijab')
 coll = db.docs
 coll.drop()
 
