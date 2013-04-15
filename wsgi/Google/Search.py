@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import re
+import os
 from pymongo import MongoClient
+
 
 key = "field"
 value = "tags"
@@ -8,9 +10,14 @@ value = "tags"
 field_list = ["Software", "Hardware", "Internet", "Technical_Other", "Medical"]
 Technical_Set = {"Software", "Hardware", "Internet", "Technical_Other"}
 
+ip = os.environ['OPENSHIFT_INTERNAL_IP']
+port = 27017
+
 def connect_database():
-    client = MongoClient()
+    
+    client = MongoClient(ip, port)
     db = client.category_db
+    db.authenticate('ijab', 'ijab')
     coll = db.docs
     return coll
 
