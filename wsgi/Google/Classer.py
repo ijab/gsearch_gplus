@@ -3,10 +3,12 @@ import sys
 
 class TypeIdentifier:
     def getTypeByTF(self, TF):
+        print "TF---------------------TF"
         print TF
         return Search.get_field_by_tf(TF)
         
     def getTypeByQuery(self, query):
+        print "QUERY-----------------------------QUERY"
         print query
         return Search.get_field_by_query(query)
         
