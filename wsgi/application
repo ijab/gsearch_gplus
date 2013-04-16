@@ -5,13 +5,17 @@ import urllib, urllib2
 import re
 from flask import Flask, render_template, request, url_for
 from flask import json
+from flask import make_response
+from flask import g
 
 from Google import index as gplusIndex
 
 app = Flask(__name__)
 app.debug = True
 
-g_plus_index = None
+# Global share variable
+g_plus_index = {}
+g_cookie_name = '__ijab_flask_c'
 
 @app.route('/')
 def index():
@@ -35,37 +39,50 @@ def show_openshift():
 
 @app.route('/suggestions', methods = ['POST', 'GET'])
 def get_suggestion():
-    global g_plus_index
+    global g_plus_index, g_cookie_name
+
+    # Get Google Plus Index object
+    _index_obj = None
+    if g_cookie_name in request.cookies:
+        cookie_val = request.cookies[g_cookie_name]
+        _index_obj = g_plus_index.get(cookie_val, None)
     # Get query terms from request
     terms = request.values['term']
 
     # Call API provided from backend module which gives suggestion
     # suggestion
     suggest = []
-    if g_plus_index:
-        sug_dict = g_plus_index.queryCompletion(terms)
+    friends = []
+    user_type = {'type' : 'Unknown'}
+    search_url = 'http://www.google.com/search?hl=en'
+    
+    if _index_obj is not None:
+        sug_dict = _index_obj.queryCompletion(terms)
 
         #suggest = [{"id":"Botaurus stellaris","label":"Great Bittern","value":"Great Bittern"},{"id":"Ixobrychus minutus","label":"Little Bittern","value":"Little Bittern"},{"id":"Ciconia ciconia","label":"White Stork","value":"White Stork"},{"id":"Netta rufina","label":"Red-crested Pochard","value":"Red-crested Pochard"},{"id":"Milvus milvus","label":"Red Kite","value":"Red Kite"},{"id":"Porzana porzana","label":"Spotted Crake","value":"Spotted Crake"},{"id":"Sterna sandvicensis","label":"Sandwich Tern","value":"Sandwich Tern"},{"id":"Sterna hirundo","label":"Common Tern","value":"Common Tern"},{"id":"Sterna paradisaea","label":"Arctic Tern","value":"Arctic Tern"},{"id":"Sternula albifrons","label":"Little Tern","value":"Little Tern"},{"id":"Chlidonias niger","label":"Black Tern","value":"Black Tern"},{"id":"Galerida cristata","label":"Crested Lark","value":"Crested Lark"}]
         suggest = sug_dict.get('suggestions', [])
+        query_type = sug_dict.get('query_type', '')
 
-    # Call API provided from backend module which gives suggestion friends
-    # 
-    #friends = [{"jid":"dincoco@gmail.com", "name":"Tony"},
-    #           {"jid":"dx88968@gmail.com", "name":"Xu Xun"},
-    #           {"jid":"eastflag163@gmail.com", "name":"Li Pengfei"}
-    #          ]
-    friends = []
-    if g_plus_index:
-        friends = g_plus_index.getHelperList(terms)
+        # Call API provided from backend module which gives suggestion friends
+        # 
+        #friends = [{"jid":"dincoco@gmail.com", "name":"Tony"},
+        #           {"jid":"dx88968@gmail.com", "name":"Xu Xun"},
+        #           {"jid":"eastflag163@gmail.com", "name":"Li Pengfei"}
+        #          ]
+    
+        friends = _index_obj.getHelperList(terms)
 
-    # Call API provided by backend module interacting with Google+
-    # 
-    user_type = {'type' : 'Unknown'}
+        # Call API provided by backend module interacting with Google+
+        #     
+        user_type = _index_obj.getUserType()
 
-    if g_plus_index:
-        user_type = g_plus_index.getUserType()
+        # Get search URL from backend index engine based on professional area
+        if query_type:
+            _guess_search_url = _index_obj.getUrlByType(query_type)
+            if _guess_search_url:
+                search_url = _guess_search_url
 
-    rv = {'suggestions' : suggest, 'friends' : friends, 'usertype' : user_type}
+    rv = {'suggestions' : suggest, 'friends' : friends, 'usertype' : user_type, 'url' : search_url}
     # Return JSON data
     return json.JSONEncoder().encode(rv)
 
@@ -87,8 +104,13 @@ def get_friends():
 @app.route('/search', methods = ['POST', 'GET'])
 def search_by_google():
     search_url = urllib2.unquote(request.values['url'])
-    search_url += '?'
-    query_string = urllib2.unquote(request.values['query_string'])
+    uri_comps = search_url.split('?')
+
+    # URL
+    search_url = uri_comps[0] + '?'
+    # query string
+    query_params = uri_comps[1:]
+    query_string = ''.join(query_params)
     query_string = urllib.urlencode(urllib2.urlparse.parse_qs(query_string))
     search_url += query_string
 
@@ -101,45 +123,69 @@ def search_by_google():
 
 @app.route('/oauth2callback', methods = ['POST', 'GET'])
 def oauth2_cb():
-    global g_plus_index
-    
+
+    global g_plus_index, g_cookie_name
+
+    # Default value
+    cookie_val = ""
+    progress = {'Status':'Crawling Info', 'RunningJob':'Fetching Google+ Information', 'Progress':0}
+
     if 'error' in request.values.keys():
         return request.values['error']
     elif 'progress' in request.values.keys():
-        progress = {'Status':'Crawling Info', 'RunningJob':'Fetching Google+ Information', 'Progress':0}
-
-        if g_plus_index:
-            progress = g_plus_index.getProgress()
-
-        return render_template('callback_progress.html', progress=progress)
+        
+        if g_cookie_name in request.cookies:
+            cookie_val = request.cookies[g_cookie_name]
+            _index_obj = g_plus_index.get(cookie_val, None)
+            if _index_obj is not None:
+                progress = _index_obj.getProgress()    
     else:
         # Call Google Plus API to get Access Token
         #
         # Google Plus APIs
-        g_plus_index = gplusIndex.dx_indexer(request.values['code'])
-        progress = g_plus_index.getProgress()
-        return render_template('callback_progress.html', progress=progress)
+        cookie_val = request.values['code']       
+
+        g_plus_index[cookie_val] = gplusIndex.dx_indexer(request.values['code'])
+        progress = g_plus_index[cookie_val].getProgress()
+
+    resp = make_response(render_template('callback_progress.html', progress=progress))
+    resp.set_cookie(g_cookie_name, cookie_val)
+    
+    return resp
    
 @app.route('/usertype')
 def get_usertype():
-    global g_plus_index
+    # Share variable for Google Plus Index
+    global g_plus_index, g_cookie_name
+
+    # Get Google Plus Index object
+    _index_obj = None
+    if g_cookie_name in request.cookies:
+        cookie_val = request.cookies[g_cookie_name]
+        _index_obj = g_plus_index.get(cookie_val, None)
 
     user_type = {'type' : 'Unknown'}
 
-    if g_plus_index:
-        user_type = g_plus_index.getUserType()
+    if _index_obj is not None:
+        user_type = _index_obj.getUserType()
 
     return json.JSONEncoder().encode(user_type) 
 
 @app.route('/progress')
 def get_progress():
-
-    global g_plus_index
+    # Share variable for Google Plus Index
+    global g_plus_index, g_cookie_name
+            
+    # Get Google Plus Index object
+    _index_obj = None
+    if g_cookie_name in request.cookies:
+        cookie_val = request.cookies[g_cookie_name]
+        _index_obj = g_plus_index.get(cookie_val, None)
 
     progress = {'Status':'Crawling Info', 'RunningJob':'Fetching Google+ Information', 'Progress':0}
 
-    if g_plus_index:
-        progress = g_plus_index.getProgress()
+    if _index_obj is not None:
+        progress = _index_obj.getProgress()
 
     # Return JSON data
     return json.JSONEncoder().encode(progress) 

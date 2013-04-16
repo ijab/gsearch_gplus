@@ -99,20 +99,21 @@ class dx_indexer:
     def queryCompletion(self, query):
         chars=None
         query = re.sub(r'[^\w]', ' ', query.lower())
+        query = query.strip()
         
         qwords=query.split()
-        cursor=len(qwords)-1
-        while(cursor>=0 and len(qwords[cursor])==0):
-            cursor=cursor-1
-        if(cursor>=0):
+        cursor=len(qwords)
+
+        if(cursor > 0):
             suggestions=[]
             temp=''
             sug = ''
-            for n in range(cursor-1):
+            # Append previous words
+            for n in range(cursor - 1):
                 if(len(qword[n])>=0 and qword[n]!=' '):
                     temp=temp+qwords[n]+' '
 
-            chars=qwords[cursor]
+            chars=qwords[cursor-1]
             if(self.rightAjContext.has_key(chars)):
                 if(len(temp)>0):
                     temp=temp+' '+chars
@@ -127,9 +128,9 @@ class dx_indexer:
                     for w in self.guessWord(chars):
                         sug=temp+' '+w
                         suggestions.append({'id':sug, 'label':sug, 'value':sug})
-            return {'suggestions':suggestions}
+            return {'suggestions':suggestions, 'query_type':typeIdentifier.getTypeByQuery(query)}
         else:
-            return {'suggestions':[]}
+            return {'suggestions':[], 'query_type' : ''}
             
     def getUserType(self):
         _type = 'Unknown'
@@ -187,7 +188,7 @@ class dx_indexer:
         return self.plus.progress
 
     def getUrlByType(self,type):
-        return typeIdentifier.getUrlByType()
+        return typeIdentifier.getUrlByType(type)
     
 if __name__ == '__main__':
     index=dx_indexer("ssas")

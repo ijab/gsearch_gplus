@@ -185,6 +185,7 @@ IJabIR.Search = IJabIR.Class(
      * Properties
      */
     baseURL							: "",
+    search_url					: "http://www.google.com/search?hl=en",
 
 		/*
 		 * Functions
@@ -240,6 +241,8 @@ IJabIR.Search = IJabIR.Class(
 		          										response(data.suggestions);
 		          										parent_self.add_friends(data.friends);
 		          										parent_self.set_user_type(data.usertype);
+		          										
+		          										parent_self.search_url = data.url;
 		          									}
           							);
           					},
@@ -272,9 +275,9 @@ IJabIR.Search = IJabIR.Class(
 		do_search : function()
 		{
 			$('#search_result').show();
-			var url = encodeURIComponent('http://www.google.com/search');			
-			var query_string = encodeURIComponent('hl=en&q=' + $("#query_terms").val());
-			$('#search_result').load('/search?url=' + url + '&query_string=' + query_string, 
+			var url = encodeURIComponent(this.search_url);			
+					url += encodeURIComponent('&q=' + $("#query_terms").val());
+			$('#search_result').load('/search?url=' + url, 
 															function(){
 																$('#wrapper').height(120);
 																$('#logo').hide();
@@ -346,7 +349,7 @@ IJabIR.IM = IJabIR.Class(
 	  	var ep = 'https://accounts.google.com/o/oauth2/auth';
 	  	
 	  	// Scopoe
-	  	var scope = 'https://www.googleapis.com/auth/plus.login';
+	  	var scope = 'https://www.googleapis.com/auth/plus.login https://www.googleapis.com/auth/plus.me';
 	  	
 	  	// state
 	  	var state = 'ijab';
