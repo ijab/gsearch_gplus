@@ -14,7 +14,7 @@ ip = os.environ['OPENSHIFT_INTERNAL_IP']
 port = 27017
 
 def connect_database():
-    
+    client = MongoClient()
     client = MongoClient(ip, port)
     db = client.category_db
     db.authenticate('ijab', 'ijab')
@@ -74,10 +74,20 @@ def get_relavance(f1, f2):
     else:
         return 0.0
 
+def get_url_by_field(query, field):
+    return {
+        'Software': 'http://www.verticalsearch.com/search.jsp?js=true&keywords=%s&category=11&x=0&y=0' % query,
+        'Hardware': 'http://hardwarenews-info.com/?s=%s'% query,
+        'Internet': 'http://www.verticalsearch.com/search.jsp?js=true&keywords=%s&category=9&x=51&y=17' % query,
+        'Technical_Other': 'http://www.verticalsearch.com/search.jsp?keywords=%s&category=12&x=37&y=11&js=true' % query,
+        'Medical': 'http://www.verticalsearch.com/search.jsp?keywords=%s&category=6&x=0&y=0&js=true' % query
+        }.get(field, 'http://www.verticalsearch.com/index.jsp')
+
 if __name__ == '__main__':
     tf_dict = {"Software": 1.2, "Hardware": 0.6, "Back": 1.0, "Bitmap": 50.0}
     print get_field_by_tf(tf_dict)
     print get_field_by_query("Internet overflow")
+    print get_url_by_field("medical", 'Hardware')
 
 
 
