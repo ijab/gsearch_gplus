@@ -62,6 +62,7 @@ def get_suggestion():
         #suggest = [{"id":"Botaurus stellaris","label":"Great Bittern","value":"Great Bittern"},{"id":"Ixobrychus minutus","label":"Little Bittern","value":"Little Bittern"},{"id":"Ciconia ciconia","label":"White Stork","value":"White Stork"},{"id":"Netta rufina","label":"Red-crested Pochard","value":"Red-crested Pochard"},{"id":"Milvus milvus","label":"Red Kite","value":"Red Kite"},{"id":"Porzana porzana","label":"Spotted Crake","value":"Spotted Crake"},{"id":"Sterna sandvicensis","label":"Sandwich Tern","value":"Sandwich Tern"},{"id":"Sterna hirundo","label":"Common Tern","value":"Common Tern"},{"id":"Sterna paradisaea","label":"Arctic Tern","value":"Arctic Tern"},{"id":"Sternula albifrons","label":"Little Tern","value":"Little Tern"},{"id":"Chlidonias niger","label":"Black Tern","value":"Black Tern"},{"id":"Galerida cristata","label":"Crested Lark","value":"Crested Lark"}]
         suggest = sug_dict.get('suggestions', [])
         query_type = sug_dict.get('query_type', '')
+        
 
         # Call API provided from backend module which gives suggestion friends
         # 
@@ -75,7 +76,9 @@ def get_suggestion():
         # Call API provided by backend module interacting with Google+
         #     
         user_type = _index_obj.getUserType()
-
+        
+        if query_type.lower() == 'unknown':
+            query_type = user_type['type']
         # Get search URL from backend index engine based on professional area
         if query_type:
             _guess_search_url = _index_obj.getUrlByType(query_type)
