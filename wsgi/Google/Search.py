@@ -75,6 +75,9 @@ def get_field_by_query(query, field):
                 para = 1.0
             for each_field in fields:
                 score[each_field] += para / len(fields)
+    max_key = max(score, key = score.get)
+    if (score[max_key] <0.0001):
+        return field
     #print score
     rankList = [k for k,v in sorted(score.items(), key=lambda item: item[1], reverse=True)]
     for i in range(0,3):
@@ -106,8 +109,8 @@ if __name__ == '__main__':
     tf_dict = {"Software": 4.2, "Hardware": 0.6, "Back": 1.0, "Bitmap": 2.0}
     tf_dict2 = {u'information': 1, u'good': 3, u'picnic': 1, u'pittsburgh': 1, u'university': 1, u'skilled': 1, u'eat': 3, u'met': 1, u'team': 1, u'somebody': 1, u'software': 1, u'retrieval': 1, u'engineer': 1}
     print get_field_by_tf(tf_dict2)
-    #print get_field_by_query("Internet Software Web", "Software")
-    #print get_url_by_field("medical", 'Hardware')
+    print get_field_by_query("asdfadsfa", "Software")
+    print get_url_by_field("Software", "medical")
 
 
 
