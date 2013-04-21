@@ -128,7 +128,7 @@ class dx_indexer:
                     for w in self.guessWord(chars):
                         sug=temp+' '+w
                         suggestions.append({'id':sug, 'label':sug, 'value':sug})
-            return {'suggestions':suggestions, 'query_type':typeIdentifier.getTypeByQuery(query, self.type)}
+            return {'suggestions':suggestions, 'query_type':typeIdentifier.getTypeByQuery(query, self.Type)}
         else:
             return {'suggestions':[], 'query_type' : ''}
             
@@ -168,7 +168,7 @@ class dx_indexer:
                             
                         type=typeIdentifier.getTypeByTF(top_tf)
                         self.friendTypes[id]=type
-        queryType=typeIdentifier.getTypeByQuery(query, self.type)
+        queryType=typeIdentifier.getTypeByQuery(query, self.Type)
         result={}
         for id in self.friendTypes.keys():
             fitlevel=typeIdentifier.contains(queryType,self.friendTypes[id])
