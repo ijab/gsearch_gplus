@@ -10,14 +10,14 @@ value = "tags"
 field_list = ["Software", "Hardware", "Internet", "Technical_Other", "Medical"]
 Technical_Set = {"Software", "Hardware", "Internet", "Technical_Other"}
 
-ip = os.environ['OPENSHIFT_INTERNAL_IP']
+#ip = os.environ['OPENSHIFT_INTERNAL_IP']
 port = 27017
 
 def connect_database():
-##    client = MongoClient()
-    client = MongoClient(ip, port)
+    client = MongoClient()
+    #client = MongoClient(ip, port)
     db = client.category_db
-    db.authenticate('ijab', 'ijab')
+    #db.authenticate('ijab', 'ijab')
     coll = db.docs
     return coll
 
@@ -52,15 +52,12 @@ def get_field_by_tf(tf_dict):
     for tf in tf_dict.items():
         #print tf[0] + "-------"
         (flag, fields) = get_fields_by_term(tf[0], coll)
-        #print fields
         if len(fields) > 0:
             para = 0.707
             if flag:
                 para = 1.0
             for field in fields:
                 score[field] += (para / len(fields)) * tf[1]
-        else:
-            return "Unknown"
         #print score
     return max(score, key = score.get)
 
@@ -107,9 +104,10 @@ def get_url_by_field(field, query=""):
 
 if __name__ == '__main__':
     tf_dict = {"Software": 4.2, "Hardware": 0.6, "Back": 1.0, "Bitmap": 2.0}
-    print get_field_by_tf(tf_dict)
-    print get_field_by_query("Internet Software Web", "Software")
-    print get_url_by_field("medical", 'Hardware')
+    tf_dict2 = {u'information': 1, u'good': 3, u'picnic': 1, u'pittsburgh': 1, u'university': 1, u'skilled': 1, u'eat': 3, u'met': 1, u'team': 1, u'somebody': 1, u'software': 1, u'retrieval': 1, u'engineer': 1}
+    print get_field_by_tf(tf_dict2)
+    #print get_field_by_query("Internet Software Web", "Software")
+    #print get_url_by_field("medical", 'Hardware')
 
 
 
