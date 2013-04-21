@@ -264,6 +264,13 @@ IJabIR.Search = IJabIR.Class(
     																				return false;
     																		});
     																		
+    	// Bind to search by googlebutton
+    	$("#google_s_button").bind('click', function(e){
+    																				e.preventDefault();
+    																				self.do_search('http://www.google.com/search?hl=en&q=');
+    																				return false;
+    																		});
+    																		
     	// Bind to clear search result button
     	$("#clear_button").bind('click', function(e){
     																				e.preventDefault();
@@ -272,33 +279,48 @@ IJabIR.Search = IJabIR.Class(
     																		});
 		},
 		
-		do_search : function()
+		do_search : function(s_url)
 		{
-			var url = encodeURIComponent(this.search_url);			
-			url += encodeURIComponent($("#query_terms").val());
-				
-			if(this.search_url.indexOf('google.com') != -1)
+			var url;
+			if(s_url == null || s_url == "")
 			{
+				url = this.search_url;
+			}
+			else
+			{
+				url = s_url;
+			}
+			
+			var _self = this;
+			if(url.indexOf('google.com') != -1)
+			{
+				url = encodeURIComponent(url) + encodeURIComponent($("#query_terms").val());
+				$('#search_result_if').hide();
 				$('#search_result').show();
 				$('#search_result').load('/search?url=' + url, 
 																function(){
-																	$('#wrapper').height(120);
-																	$('#logo').hide();
-																	$('#clear_button').show();
+																	_self.on_show_search_result();
 																});
 			}
 			else
 			{
-				url = this.search_url + encodeURIComponent($("#query_terms").val());
+				url += encodeURIComponent($("#query_terms").val());
+				$('#search_result').hide();
 				$('#search_result_if').show();
 				$('#search_result_if').attr('width', '85%');
 				$('#search_result_if').attr('height', '80%');
 				$('#search_result_if').attr('src', url);
 				
-				$('#wrapper').height(120);
-				$('#logo').hide();
-				$('#clear_button').show();
+				_self.on_show_search_result();
 			}
+		},
+		
+		on_show_search_result : function()
+		{
+			$('#wrapper').height(120);
+			$('#logo').hide();
+			$("#google_s_button").show();
+			$('#clear_button').show();
 		},
 		
 		clear_search_result : function()
@@ -312,6 +334,7 @@ IJabIR.Search = IJabIR.Class(
 			$('#wrapper').height('60%');
 			$('#logo').show();
 			$('#clear_button').hide();
+			$("#google_s_button").hide();
 		}
 });
 
