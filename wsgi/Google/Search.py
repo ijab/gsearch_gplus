@@ -73,14 +73,17 @@ def get_relavance(f1, f2):
     else:
         return 0.0
 
-def get_url_by_field(query, field):
-    return {
-        'Software': 'http://www.verticalsearch.com/search.jsp?js=true&keywords=%s&category=11&x=0&y=0' % query,
-        'Hardware': 'http://hardwarenews-info.com/?s=%s'% query,
-        'Internet': 'http://www.verticalsearch.com/search.jsp?js=true&keywords=%s&category=9&x=51&y=17' % query,
-        'Technical_Other': 'http://www.verticalsearch.com/search.jsp?keywords=%s&category=12&x=37&y=11&js=true' % query,
-        'Medical': 'http://www.verticalsearch.com/search.jsp?keywords=%s&category=6&x=0&y=0&js=true' % query
-        }.get(field, 'http://www.verticalsearch.com/index.jsp')
+def get_url_by_field(field, query=""):
+    url = {
+        'Software': 'http://www.verticalsearch.com/search.jsp?js=true&category=11&x=0&y=0&keywords=',
+        'Hardware': 'http://hardwarenews-info.com/?s=',
+        'Internet': 'http://www.verticalsearch.com/search.jsp?js=true&category=9&x=51&y=17&keywords=',
+        'Technical_Other': 'http://www.verticalsearch.com/search.jsp?category=12&x=37&y=11&js=true&keywords=',
+        'Medical': 'http://www.verticalsearch.com/search.jsp?category=6&x=0&y=0&js=true&keywords='
+        }.get(field, 'http://www.google.com/search?hl=en&q=')
+    if query:
+        url += query
+    return url
 
 if __name__ == '__main__':
     tf_dict = {"Software": 1.2, "Hardware": 0.6, "Back": 1.0, "Bitmap": 50.0}

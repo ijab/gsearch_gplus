@@ -276,7 +276,7 @@ IJabIR.Search = IJabIR.Class(
 		{
 			$('#search_result').show();
 			var url = encodeURIComponent(this.search_url);			
-					url += encodeURIComponent('&q=' + $("#query_terms").val());
+					url += encodeURIComponent($("#query_terms").val());
 			$('#search_result').load('/search?url=' + url, 
 															function(){
 																$('#wrapper').height(120);

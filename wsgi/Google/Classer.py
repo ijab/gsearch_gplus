@@ -11,7 +11,7 @@ class TypeIdentifier:
     def contains(self, type1, type2):
         return Search.get_relavance(type1, type2)
 
-    def getUrlByType(self, query, field):
-        return Search.get_url_by_field(query, field)
+    def getUrlByType(self, field, query=""):
+        return Search.get_url_by_field(field, query)
 
 
