@@ -110,7 +110,7 @@ class dx_indexer:
             sug = ''
             # Append previous words
             for n in range(cursor - 1):
-                if(len(qword[n])>=0 and qword[n]!=' '):
+                if(len(qwords[n])>=0 and qwords[n]!=' '):
                     temp=temp+qwords[n]+' '
 
             chars=qwords[cursor-1]

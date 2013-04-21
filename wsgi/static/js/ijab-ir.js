@@ -274,21 +274,40 @@ IJabIR.Search = IJabIR.Class(
 		
 		do_search : function()
 		{
-			$('#search_result').show();
 			var url = encodeURIComponent(this.search_url);			
-					url += encodeURIComponent($("#query_terms").val());
-			$('#search_result').load('/search?url=' + url, 
-															function(){
-																$('#wrapper').height(120);
-																$('#logo').hide();
-																$('#clear_button').show();
-															});
+			url += encodeURIComponent($("#query_terms").val());
+				
+			if(this.search_url.indexOf('google.com') != -1)
+			{
+				$('#search_result').show();
+				$('#search_result').load('/search?url=' + url, 
+																function(){
+																	$('#wrapper').height(120);
+																	$('#logo').hide();
+																	$('#clear_button').show();
+																});
+			}
+			else
+			{
+				url = this.search_url + encodeURIComponent($("#query_terms").val());
+				$('#search_result_if').show();
+				$('#search_result_if').attr('width', '85%');
+				$('#search_result_if').attr('height', '80%');
+				$('#search_result_if').attr('src', url);
+				
+				$('#wrapper').height(120);
+				$('#logo').hide();
+				$('#clear_button').show();
+			}
 		},
 		
 		clear_search_result : function()
 		{
 			$('#search_result').hide();
 			$('#search_result').empty();
+			
+			$('#search_result_if').hide();
+			$('#search_result_if').attr('src', "");
 			
 			$('#wrapper').height('60%');
 			$('#logo').show();

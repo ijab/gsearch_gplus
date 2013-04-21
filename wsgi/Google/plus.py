@@ -137,10 +137,10 @@ class dx_gplus_crawler:
         return content
         
     def fetchPersonInfo(self, id):
-        #try:
-        person=self.service.people().get(userId=id).execute(http=self.http)
-        #except:
-        #    return
+        try:
+            person=self.service.people().get(userId=id).execute(http=self.http)
+        except:
+            return
         
         if(self.InfoList is None):
             self.InfoList={}
@@ -150,10 +150,10 @@ class dx_gplus_crawler:
                 content.append(org.get('name', ''))
         if(person.has_key('tagline')):
             content.append(person['tagline'])
-        #try:
-        activities_doc = self.service.activities().list(userId=id, collection='public').execute(http=self.http)
-        #except:
-        #    activities_doc = {'items' : []}
+        try:
+            activities_doc = self.service.activities().list(userId=id, collection='public').execute(http=self.http)
+        except:
+            activities_doc = {'items' : []}
 
         count = 0
         for item in activities_doc['items']:
