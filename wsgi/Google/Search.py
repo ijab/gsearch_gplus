@@ -14,24 +14,35 @@ ip = os.environ['OPENSHIFT_INTERNAL_IP']
 port = 27017
 
 def connect_database():
+##    client = MongoClient()
     client = MongoClient(ip, port)
     db = client.category_db
     db.authenticate('ijab', 'ijab')
     coll = db.docs
     return coll
 
-def get_field_by_term(term, coll):
-    term = term.lower()
-    for doc in coll.find({value: term}):
-        return doc[key]
-    return None
+##def get_field_by_term(term, coll):
+##    term = term.lower()
+##    fields = []
+##    for doc in coll.find({value: term}):
+##        fields.append(doc[key])
+##    if len(fields) > 0:
+##        return fields
+##    else:
+##        return None
 
 def get_fields_by_term(term, coll):
     term = term.lower()
     fields = []
-    for doc in coll.find({value: {'$regex': term}}):
+    for doc in coll.find({value: term}):
         fields.append(doc[key])
-    return fields
+    if len(fields) > 0:
+        return (True, fields)
+    else:
+        for doc in coll.find({value: {'$regex': term}}):
+            fields.append(doc[key])
+        return (False, fields)
+
 
 def get_field_by_tf(tf_dict):
     coll = connect_database()
@@ -40,30 +51,39 @@ def get_field_by_tf(tf_dict):
         score[field] = 0.0
     for tf in tf_dict.items():
         #print tf[0] + "-------"
-        field = get_field_by_term(tf[0], coll)
-        if field == None:
-            fields = get_fields_by_term(tf[0], coll)
+        (flag, fields) = get_fields_by_term(tf[0], coll)
+        #print fields
+        if len(fields) > 0:
+            para = 0.707
+            if flag:
+                para = 1.0
             for field in fields:
-                score[field] += (0.707 / len(fields)) * tf[1]
+                score[field] += (para / len(fields)) * tf[1]
         else:
-            score[field] += 1.0 * tf[1]
+            return "Unknown"
         #print score
     return max(score, key = score.get)
 
-def get_field_by_query(query):
+def get_field_by_query(query, field):
     coll = connect_database()
     score = {}
-    for field in field_list:
-        score[field] = 0.0
+    for each_field in field_list:
+        score[each_field] = 0.0
+        
     for term in query.split():
-        field = get_field_by_term(term, coll)
-        if field == None:
-            fields = get_fields_by_term(term, coll)
-            for field in fields:
-                score[field] += 0.707 / len(fields)
-        else:
-            score[field] += 1.0
-    return max(score, key = score.get)
+        (flag, fields) = get_fields_by_term(term, coll)
+        if len(fields) > 0:
+            para = 0.707
+            if flag:
+                para = 1.0
+            for each_field in fields:
+                score[each_field] += para / len(fields)
+    #print score
+    rankList = [k for k,v in sorted(score.items(), key=lambda item: item[1], reverse=True)]
+    for i in range(0,3):
+        if rankList[i] == field:
+            return field
+    return rankList[0]
 
 def get_relavance(f1, f2):
     if f1 == f2:
@@ -86,9 +106,9 @@ def get_url_by_field(field, query=""):
     return url
 
 if __name__ == '__main__':
-    tf_dict = {"Software": 1.2, "Hardware": 0.6, "Back": 1.0, "Bitmap": 50.0}
+    tf_dict = {"Software": 4.2, "Hardware": 0.6, "Back": 1.0, "Bitmap": 2.0}
     print get_field_by_tf(tf_dict)
-    print get_field_by_query("Internet overflow")
+    print get_field_by_query("Internet Software Web", "Software")
     print get_url_by_field("medical", 'Hardware')
 
 
