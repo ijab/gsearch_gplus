@@ -189,6 +189,9 @@ class dx_indexer:
 
     def getUrlByType(self,type):
         return typeIdentifier.getUrlByType(type)
+
+    def getTypeByQuery(self,query):
+        return typeIdentifier.getTypeByQuery(query)
     
 if __name__ == '__main__':
     index=dx_indexer("ssas")
